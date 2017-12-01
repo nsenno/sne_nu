@@ -11,4 +11,4 @@ nu_data['ang_err (rad)'] = nu_data.ang_err.apply(np.radians)
 
 #write new data to file with correct column ordering
 
-nu_data[['MJD','ang_err (rad)','RA (rad)','Dec (rad)']].to_csv('cleaned_nu_data.csv',index=False)
+nu_data[['MJD','ang_err (rad)','RA (rad)','Dec (rad)']].to_csv('data/cleaned_nu_data.csv',index=False)

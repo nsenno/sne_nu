@@ -55,4 +55,4 @@ in_time_window = (sne_data['Max Date (MJD)'] >= min_mjd) & (max_mjd >= sne_data[
 # Write the data to the file 
 
 sne_data.loc[in_time_window*right_type, ['Max Date (MJD)','R.A. (rad)','Dec. (rad)','z','Type']].sort_values( \
-        'Max Date (MJD)').to_csv('cleaned_sne_data.csv')
+        'Max Date (MJD)').to_csv('data/cleaned_sne_data.csv')
