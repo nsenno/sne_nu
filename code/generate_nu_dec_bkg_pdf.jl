@@ -52,7 +52,7 @@ my_dict = Dict(sne_data[1][i,1] => nu_idxs[find_associated_nus(a_sn,nus)] for (i
 # Determine an array of Bools indicating if a neutrino is a background event
 # i.e., it is not associated with any sn
 
-idxs_of_non_associated_nus = [~is_contained(idx,values(my_dict)) for idx in nu_idxs];
+idxs_of_non_associated_nus = [~is_nu_in_dict(idx,values(my_dict)) for idx in nu_idxs];
 
 # Generate an array of dec's for background neutrinos
 
