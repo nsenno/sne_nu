@@ -7,10 +7,12 @@ type sn
   z::Float64
   zenith_bin::Int
   nb::Float64
+  associated_nus::Array{nu,1}
   coefs::Array{Float64,1}
 
   function sn(max_date::Real,ra::Float64,dec::Float64,z::Float64)
       new_sn = new(max_date,ra,dec,z);
+      new_sn.associated_nus=nu[];
       new_sn.coefs = Float64[];
 
       return new_sn
@@ -18,8 +20,11 @@ type sn
 end
 
 add_coefs!(t_sn::sn, coefs::Array{Float64,1}) = t_sn.coefs=coefs;
-add_nb_and_zenith_bin_idx!(t_sn::sn, nb::Float64, kk::Int) = (t_sn.nb=nb; t_sn.zenith_bin = kk;)
+add_nb!(t_sn::sn, nb::Float64) = t_sn.nb=nb;
+add_nu!(t_sn::sn, nu::Array{nu,1}) = append!(t_sn.associated_nus,nu);
+add_nu!(t_sn::sn, nu::nu) = append!(t_sn.associated_nus,nu);
 
+rm_associated_nus!(t_sn) = t_sn.associated_nus=nu[];
 rm_coefs!(t_sn) = t_sn.coefs=Float64[];
 
 # Function that determines which nus from an input array are associated with a
@@ -67,7 +72,7 @@ function find_associated_nus(t_sn::sn, t_nus::Array{nu,1})
 
     # determine if the neutrino is within the angular acceptance window of
     # the sn. Here we utilize different approximations of the
-    # Kent Distribution 
+    # Kent Distribution
 
     for j in 1:t_len_nu
         if t_kappa[j] > 10.0
@@ -82,4 +87,62 @@ function find_associated_nus(t_sn::sn, t_nus::Array{nu,1})
     end
     in_ang_window[:] = t_mu .> acceptance_mu;
     return in_time_window.*in_ang_window;
+end
+
+# function that calculates the average number of neutrinos associated with each SN using scrambled neutrino data
+# the results are written to a file "nb_data.dat"
+function calc_nb(N_samples = 1000)
+
+    len_sne = length(sne);
+    len_nu = length(nu);
+
+    # Array to store the number of background neutrinos for each SN for each randomized sample
+
+    num_nb = zeros(Int,N_samples,len_sne);
+
+    for n in 1:N_samples
+        sample_nus = create_nu_array(create_sample_nus(nu_data,len_nu))
+        num_nb[n,:] = [sum(find_associated_nus(sn,sample_nus)) for sn in sne]
+    end
+
+    writedlm(string(data_dir,"nb_data.dat"),[mean(num_nb[:,i]) for (i,_) in enumerate(sne)])
+
+end
+
+# Function that calculates the coefficients neccesary to simplify the TS
+# calculation. In this version, only arrival time and direction are considered.
+#
+# Input :
+#   t_sn  --  a single sn object that already has its associated nus
+#             array filled with nu objects
+#
+# Output :
+#   None 
+
+function calc_coefs!(t_sn::sn)
+    if length(t_sn.associated_nus) > 0
+
+        # Signal direction PDF from Kent distirbution
+
+        temp_s = map(x-> S_dir(t_sn,x),t_sn.associated_nus);
+
+        # Signal time PDF from Poisson distribution with mean 13 days
+
+        temp_s .*= map(x-> S_time(t_sn,x),t_sn.associated_nus);
+
+        # Background direction PDF comprized of RA (uniform in [0,2pi]) and
+        # Dec. which is computed experimentally from the function "get_dec_pdf"
+        # from "sig_and_bkg_pdfs.jl"
+
+        temp_b = (1/(2*pi))*map(B_dec,[t_sn.associated_nus[j].dec for j in 1:length(t_sn.associated_nus)]);
+
+        # Background time PDF is uniform over 16 days (which is the size
+        # of the acceptance window)
+
+        temp_b ./= 16.0;
+
+        # Add the relevant coeficient to input sn
+
+        add_coefs!(t_sn,temp_s./temp_b./t_sn.nb);
+    end
 end

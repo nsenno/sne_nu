@@ -99,8 +99,8 @@ end
 # Read in values of Dec for background neutrinos. Relevant file is created by
 # "generate_nu_dec_bkg_pdf.jl"
 
-bkg_dec = readdlm("data/bkg_nu_dec_values.dat")[:];
+bkg_dec = readdlm(string(data_dir,"bkg_nu_dec_values.dat"))[:];
 
-# Convert background neutrino Dec values to Background PDF 
+# Convert background neutrino Dec values to Background PDF
 
 B_dec = get_dec_pdf(bkg_dec)
