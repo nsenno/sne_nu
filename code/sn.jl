@@ -1,5 +1,3 @@
-include("nu.jl")
-
 type sn
   max_date::Float64
   ra::Float64

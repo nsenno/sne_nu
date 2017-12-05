@@ -1,7 +1,5 @@
 using KernelDensity
 
-include("sn.jl")
-
 # Function that calculates the signal probability distribution for an
 # individual neutrino with respect to an individual SN. We use the Kent
 # Distribution to account for the spherical coordinates. The angular uncertainty
