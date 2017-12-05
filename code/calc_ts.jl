@@ -45,10 +45,13 @@ end
 #            nus and coefficients
 #
 # Outputs :
-#   ns        --  array of s_j's corresponding to the input sne
-#   result_TS --  resulting value of TS from optimization 
+#   s_j        --  array of s_j's corresponding to the input sne
+#   result_TS --  resulting value of TS from optimization
 
 function get_TS(sne::Array{sn,1})
+
+  s_j = zeros(Float64,length(sne))
+
   # ensure that the sn that we are considering have associated nus, or else
   # the calculation won't work
 
@@ -56,11 +59,11 @@ function get_TS(sne::Array{sn,1})
 
   # find the s_j's that form a stationary solution (i.e., the derivative of TS = 0)
 
-  ns[non_empty_arrays] = [optimize(x-> abs(calc_TS_deriv(x,sn.coefs)),max(maximum(-1./sn.coefs),-sn.nb),100.0).minimizer for sn in sne[non_empty_arrays]];
+  s_j[non_empty_arrays] = [optimize(x-> abs(calc_TS_deriv(x,sn.coefs)),max(maximum(-1./sn.coefs),-sn.nb),100.0).minimizer for sn in sne[non_empty_arrays]];
 
   # calculate the value of TS corresponding to this array of s_j's
 
-  result_TS = calc_TS(ns[non_empty_arrays],sne[non_empty_arrays]);
+  result_TS = calc_TS(s_j[non_empty_arrays],sne[non_empty_arrays]);
 
-  return ns, result_TS
+  return s_j, result_TS
 end
