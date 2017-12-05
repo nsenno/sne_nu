@@ -27,6 +27,20 @@ add_nu!(t_sn::sn, nu::nu) = append!(t_sn.associated_nus,nu);
 rm_associated_nus!(t_sn) = t_sn.associated_nus=nu[];
 rm_coefs!(t_sn) = t_sn.coefs=Float64[];
 
+# Function that reads in an array of SN data and converts it into an array of sn objects
+#
+# Inputs :
+#    sn_data --  a 2D array of floats containing raw neutrino data
+#                data organization : [Max Date (MJD), RA, Dec, Redshift (z)]
+#
+# Output :
+#    an array of sn objects created from raw SN data
+#
+
+function create_sn_array(sn_data::Array{Any,2})
+    return [sn(sn_data[i,2:5]...) for i in 1:length(sn_data[:,1])];
+end
+
 # Function that determines which nus from an input array are associated with a
 # single sn. This is done by checking to see if the sn is within the error
 # region defined by its uncertainty in arrival direction and time
@@ -117,7 +131,7 @@ end
 #             array filled with nu objects
 #
 # Output :
-#   None 
+#   None
 
 function calc_coefs!(t_sn::sn)
     if length(t_sn.associated_nus) > 0
